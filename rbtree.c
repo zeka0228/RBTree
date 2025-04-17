@@ -49,7 +49,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   while (1)
   {
 
-    if( key > checker->key ){
+    if( key >= checker->key ){
       //우측에 아무것도 없을 때때
       if(checker->right ==NULL){
         checker->right= new_node;
@@ -60,7 +60,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
         checker = checker-> right;
     }
 
-    else if(key < checker->key ){
+    else{
       //왼쪽에 아무것도 없을 때때
       if(checker->left ==NULL){
         checker->left= new_node;
@@ -70,14 +70,8 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
       else
         checker = checker-> left;
     }
+    
 
-    // 임시입니다. 임시입니다. 중복값 나오면 일단 레프트에 넣자 
-    else{
-      new_node->right = checker->right; 
-      checker->right = new_node;
-
-      break;
-    }
   }
   new_node->parent = checker;
 
@@ -151,6 +145,16 @@ void INSERTChecking(node_t *node){
   
   INSERTChecking(node->parent);
 }
+
+
+
+
+
+
+
+//중요 : 루트가 바꼈을 때 최신화가 아직 안되어있음 이거 꼭 반영해야됨, 회전 함수에 넣는걸 우선 생각중 -> 이중포인터로 넣자
+
+
 
 
 
