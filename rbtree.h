@@ -26,7 +26,9 @@ node_t *rbtree_find(const rbtree *, const key_t);
 node_t *rbtree_min(const rbtree *);
 node_t *rbtree_max(const rbtree *);
 int rbtree_erase(rbtree *, node_t *);
-
+void INSERTChecking(node_t *node);
 int rbtree_to_array(const rbtree *, key_t *, const size_t);
+void R_rotate(node_t *node);
+void L_rotate(node_t *node);
 
 #endif  // _RBTREE_H_

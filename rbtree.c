@@ -2,10 +2,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+
+
+node_t *rbtree_insert(rbtree *, const key_t);
+node_t *rbtree_find(const rbtree *, const key_t);
+node_t *rbtree_min(const rbtree *);
+node_t *rbtree_max(const rbtree *);
+int rbtree_erase(rbtree *, node_t *);
+void INSERTChecking(node_t *node);
+int rbtree_to_array(const rbtree *, key_t *, const size_t);
+void R_rotate(node_t *node);
+void L_rotate(node_t *node);
+void REMOVEchecking(node_t *node);
+
+
+
+
+
+
+
+
+
+
 //트리 여러개 생성 케이스도 만들어야함!!!!! 
 rbtree *new_rbtree(void) {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
   p->nil = malloc(sizeof(node_t)); //센티널만들기
+  p->nil->key = NULL;
   p->nil->color = RBTREE_BLACK;  //블랙 고정정
   int item;
   printf ("트리를 만드려 하시는군요! 트리에 넣을 값을 알려주시면 도와드릴게요! : ");
@@ -35,7 +59,7 @@ void delete_rbtree(rbtree *t) {
   while (t->root->right != t->nil || t->root->left != t->nil){
     
     //좌측 밑바닥으로로
-    while(cur->left->key != t->nil){
+    while(cur->left != t->nil){
       pre = cur;
       cur = cur->left;
     }
@@ -281,9 +305,219 @@ node_t *rbtree_max(const rbtree *t) {
 
 
 int rbtree_erase(rbtree *t, node_t *p) {
-  // TODO: implement erase
+  color_t remove_color = p->color;
+  color_t check_color;
+  node_t *RP;
+  //루트일 때 예외처리리
+
+
+
+  //검색해서 나온게 왼쪽 노드 였을 때
+  if(p->key < p->parent->key){
+    //자식 노드가 하나일때
+    if(p->left == t->nil){
+      p->parent->left = p->right;
+
+      p->right->parent = p->parent;
+
+      check_color = p->right->color; 
+      p->right->color = RBTREE_BLACK;
+      RP = p->right;
+    }
+
+    else if(p->right == t->nil){
+      p->parent->left = p->left;
+
+      p->left->parent = p->parent;
+
+      check_color = p->left->color;
+      p->left->color = RBTREE_BLACK;
+      RP = p->left;
+    }
+
+    //자식 노드가 두개일 때
+    else{
+      RP = p->right; //후임자 찾기용용
+      while (RP->left = t->nil){
+        RP = RP->left;
+      }
+      RP->parent->left = RP->right;
+      RP->right->parent = RP->parent;
+
+      p->parent->left = RP;
+      RP->parent = p->parent;
+      RP->right = p->right;
+      p->right->parent = RP;
+
+      check_color = RP->color;
+      RP->color = RBTREE_BLACK;
+
+    }
+    
+  }  
+
+
+  //우측 노드일때때
+  else{
+    //자식 노드가 하나일때
+    if(p->left == t->nil){
+      p->parent->right = p->right;
+
+      p->right->parent = p->parent;
+
+      check_color = p->right->color; 
+      p->right->color = RBTREE_BLACK;
+      RP = p->right;
+    }
+
+    else if(p->right == t->nil){
+      p->parent->right = p->left;
+
+      p->left->parent = p->parent;
+
+      check_color = p->left->color;
+      p->left->color = RBTREE_BLACK;
+      RP = p->left;
+    }
+
+    //자식 노드가 두개일 때
+    else{
+      RP = p->right; //후임자 찾기용용
+      while (RP->left = t->nil){
+        RP = RP->left;
+      }
+
+      //우측 서브트리/리프노드 부모에 붙이기
+      RP->parent->right = RP->right;
+      RP->right->parent = RP->parent;
+
+
+      p->parent->right = RP;
+      RP->parent = p->parent;
+      RP->right = p->right;
+      p->right->parent = RP;
+
+      check_color = RP->color;
+      RP->color = RBTREE_BLACK;
+    }
+    
+    
+  }
+    
+  free(p);
+
+
+  if (remove_color ==RBTREE_BLACK && check_color == RBTREE_BLACK){
+        REMOVEchecking(RP);
+  }
+    
+
+
+  t->nil->parent = NULL;
   return 0;
 }
+
+//이중블랙일때만 실행되도록 설계 **중요:형제가 nil일 수는 없다 내가 일단 블랙인데 옆에 블랙이 없으면 그건 잘못된거겠지???
+void REMOVEcheking(node_t *node){
+  //루트 예외 설계 필요
+  if(node->parent->key == NULL){
+    return;
+  }
+
+
+
+  node_t *silbling;
+
+  //방향 판별
+  if(node == node->parent->left ){
+    silbling = node->parent->right;
+    //형제가 빨강
+    if(silbling->color == RBTREE_RED){
+      silbling->color = RBTREE_BLACK;
+      node->parent->color = RBTREE_RED;
+      L_rotate(node->parent);
+      return REMOVEcheking(node);
+      
+    }
+
+    //형제가 검정 
+    else{
+
+      //형제 방향과 같은 방향 자식이 빨강  ***중요 : 둘다 레드여도 얘가 우선순위라 이게 맞음!!!
+      if(silbling->right->color == RBTREE_RED){
+        silbling->color = silbling->parent->color;
+        silbling->right->color = RBTREE_BLACK;
+        silbling->parent = RBTREE_BLACK;
+        L_rotate(silbling->parent);
+      }
+      //다른 방향 자식이 빨강
+      else if(silbling->left->color == RBTREE_RED){
+        silbling->color = RBTREE_RED;
+        silbling->left->color = RBTREE_BLACK;
+        R_rotate(silbling);
+        return REMOVEcheking(node); //다시 실행해서 위에꺼 작동되도록, 그래서 레드 준겨 ㅇㅇㅇ
+      }
+
+      //둘다 검정
+      else{
+        silbling->color = RBTREE_RED;
+        if(node->parent->color == RBTREE_BLACK)
+          return REMOVEcheking(node->parent);
+        node->parent->color = RBTREE_BLACK;
+      }
+    }
+  }
+
+
+
+  //오른쪽일 때!!!!!!!!!!!
+  else{
+    silbling = node->parent->left;
+    //형제가 빨강
+    if(silbling->color == RBTREE_RED){
+      silbling->color = RBTREE_BLACK;
+      node->parent->color = RBTREE_RED;
+      R_rotate(node->parent);
+      return REMOVEcheking(node);
+      
+    }
+
+    //형제가 검정 
+    else{
+
+      //형제 방향과 같은 방향 자식이 빨강  ***중요 : 둘다 레드여도 얘가 우선순위라 이게 맞음!!!
+      if(silbling->left->color == RBTREE_RED){
+        silbling->color = silbling->parent->color;
+        silbling->left->color = RBTREE_BLACK;
+        silbling->parent = RBTREE_BLACK;
+        R_rotate(silbling->parent);
+      }
+      //다른 방향 자식이 빨강
+      else if(silbling->right->color == RBTREE_RED){
+        silbling->color = RBTREE_RED;
+        silbling->right->color = RBTREE_BLACK;
+        L_rotate(silbling);
+        return REMOVEcheking(node); //다시 실행해서 위에꺼 작동되도록, 그래서 레드 준겨 ㅇㅇㅇ
+      }
+
+      //둘다 검정
+      else{
+        silbling->color = RBTREE_RED;
+        if(node->parent->color == RBTREE_BLACK)
+          return REMOVEcheking(node->parent);
+        node->parent->color = RBTREE_BLACK;
+      }
+    }
+
+
+
+  }
+
+  return;
+}
+
+
+
 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   // TODO: implement to_array
@@ -293,40 +527,3 @@ int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
 
 
 
-// void insert_RBnode(RBnode *Pnode, int item){
-        
-//     if(item < Pnode->item){
-//         if(Pnode->left == NULL){
-//             RBnode *node = makenode(item);
-//             Pnode->left = node;
-//             return;
-//         }
-
-//         insert_RBnode(Pnode->left,item);
-//     } 
-
-
-//     if(item > Pnode->item){
-//         if(Pnode->right == NULL){
-//             RBnode *node = makenode(item);
-//             Pnode->right = node;
-//             return;
-//         }
-        
-//         insert_RBnode(Pnode->right,item);
-//     }
-
-//     if(item == Pnode->item){
-//         printf("중복입니다 값을 똑바로 넣어주세요 ^^");
-//         return;
-//     }
-
-//     INSERTcheck(&(Pnode));
-// }
-
-
-// void INSERTcheck(RBnode **Pnode){
-//     if((*Pnode)->left->color == 'R')
-
-
-// }
