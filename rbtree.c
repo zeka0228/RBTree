@@ -29,13 +29,11 @@ void REMOVEchecking(node_t *node);
 rbtree *new_rbtree(void) {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
   p->nil = malloc(sizeof(node_t)); //센티널만들기
-  p->nil->key = NULL;
+  p->nil->key = -1;
   p->nil->color = RBTREE_BLACK;  //블랙 고정정
   int item;
   printf ("트리를 만드려 하시는군요! 트리에 넣을 값을 알려주시면 도와드릴게요! : ");
-  while (scanf("%d", item) > 0){
-    rbtree_insert(p,item);
-  }
+  rbtree_insert(p,item);
 
   return p;
 }
@@ -156,7 +154,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
 //삽입 조건 만족 확인
 void INSERTChecking(node_t *node){
   //바텀 업 구상이기에 루트까지 올라가면 블랙처리 후 리턴
-  if (node->parent->key == NULL){ //루트의 대가리는 NIL
+  if (node->parent->key == -1){ //루트의 대가리는 NIL
     node->color = RBTREE_BLACK;
     return;
   }
@@ -177,12 +175,12 @@ void INSERTChecking(node_t *node){
         node->parent->color = RBTREE_RED;
         if(node->right->color == RBTREE_RED){
           node->color = RBTREE_BLACK;
-          L_rocate(node); //좌회전
+          L_rotate(node); //좌회전
         }
         else{
           node->left->color = RBTREE_BLACK;
-          R_rocate(node->left); //혹은 우회전
-          L_rocate(node->parent); //다시 좌회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
+          R_rotate(node->left); //혹은 우회전
+          L_rotate(node->parent); //다시 좌회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
         }
 
       }
@@ -202,12 +200,12 @@ void INSERTChecking(node_t *node){
         node->parent->color = RBTREE_RED;
         if(node->left->color == RBTREE_RED){
           node->color = RBTREE_BLACK;
-          R_rocate(node); //우회전
+          R_rotate(node); //우회전
         }
         else{
           node->right->color = RBTREE_BLACK;
-          L_rocate(node->right); //좌회전
-          R_rocate(node->parent); //혹은 우회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
+          L_rotate(node->right); //좌회전
+          R_rotate(node->parent); //혹은 우회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
         } 
       }
     }
@@ -420,7 +418,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
 //이중블랙일때만 실행되도록 설계 **중요:형제가 nil일 수는 없다 내가 일단 블랙인데 옆에 블랙이 없으면 그건 잘못된거겠지???
 void REMOVEcheking(node_t *node){
   //루트 예외 설계 필요
-  if(node->parent->key == NULL){
+  if(node->parent->key == -1){
     return;
   }
 
@@ -447,7 +445,7 @@ void REMOVEcheking(node_t *node){
       if(silbling->right->color == RBTREE_RED){
         silbling->color = silbling->parent->color;
         silbling->right->color = RBTREE_BLACK;
-        silbling->parent = RBTREE_BLACK;
+        silbling->parent->color = RBTREE_BLACK;
         L_rotate(silbling->parent);
       }
       //다른 방향 자식이 빨강
@@ -489,7 +487,7 @@ void REMOVEcheking(node_t *node){
       if(silbling->left->color == RBTREE_RED){
         silbling->color = silbling->parent->color;
         silbling->left->color = RBTREE_BLACK;
-        silbling->parent = RBTREE_BLACK;
+        silbling->parent->color = RBTREE_BLACK;
         R_rotate(silbling->parent);
       }
       //다른 방향 자식이 빨강
