@@ -178,12 +178,12 @@ void INSERTChecking(node_t *node){
         node->parent->color = RBTREE_RED;
         if(node->left->color == RBTREE_RED){
           node->color = RBTREE_BLACK;
-          R_rocate(node); //우우회전
+          R_rocate(node); //우회전
         }
         else{
           node->right->color = RBTREE_BLACK;
           L_rocate(node->right); //좌회전
-          R_rocate(node->parent); //혹은 우회회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
+          R_rocate(node->parent); //혹은 우회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
         } 
       }
     }
@@ -221,19 +221,64 @@ void R_rotate(node_t *node){
 
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  // TODO: implement find
-  return t->root;
+  node_t *checker = t->root;
+
+  //비어있거나 센티널만 있을 때 대비 예외 처리
+  if(checker == NULL || checker == t->nil)
+    return NULL;
+
+  while(checker != t->nil){
+    if(checker->key > key){
+      checker = checker->right;
+    }
+
+    else if(checker->key < key){
+      checker = checker->left;
+    }
+
+    else //중복이면 가장 먼저 조회된 놈부터
+      return checker;
+  }
+
+  return NULL;
+
+
 }
 
+
+
 node_t *rbtree_min(const rbtree *t) {
-  // TODO: implement find
-  return t->root;
+  node_t *checker = t->root;
+
+  //비어있거나 센티널만 있을 때 대비 예외 처리
+  if(checker == NULL || checker == t->nil)
+    return NULL;
+
+  //래프트가 센티널이어야 최소
+  while (checker->left != t->nil){
+    checker = checker->left;
+  }
+  
+  return checker;
 }
 
 node_t *rbtree_max(const rbtree *t) {
-  // TODO: implement find
-  return t->root;
+  node_t *checker = t->root;
+
+  //비어있거나 센티널만 있을 때 대비 예외 처리
+  if(checker == NULL || checker == t->nil)
+    return NULL;
+
+  //라이트가 센티널이어야 최대
+  while (checker->right != t->nil){
+    checker = checker->right;
+  }
+  
+  return checker;
 }
+
+
+
 
 int rbtree_erase(rbtree *t, node_t *p) {
   // TODO: implement erase
