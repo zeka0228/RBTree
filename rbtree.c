@@ -76,8 +76,16 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   new_node->parent = checker;
 
   //부모가 레드일때만 체크, 블랙은 패스, 루트인건 위에서 예외처리 했으니 경우의 수 없음
-  if (new_node->parent->color == RBTREE_RED) 
+  if (new_node->parent->color == RBTREE_RED){ 
     INSERTChecking(new_node);
+    
+    //자리 위치 바뀌었을 때 대비해서 루트 최신화
+    while (t->root->parent != t->nil){
+        t->root = t->root->parent;
+      }
+      
+    }
+
   return t->root;
 }
 
@@ -106,12 +114,12 @@ void INSERTChecking(node_t *node){
         node->parent->color = RBTREE_RED;
         if(node->right->color == RBTREE_RED){
           node->color = RBTREE_BLACK;
-          L_rocate(node->parent); //좌회전
+          L_rocate(node); //좌회전
         }
         else{
           node->left->color = RBTREE_BLACK;
           R_rocate(node->left); //혹은 우회전
-          L_rocate(node->parent->parent); //다시 좌회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
+          L_rocate(node->parent); //다시 좌회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
         }
 
       }
@@ -131,12 +139,12 @@ void INSERTChecking(node_t *node){
         node->parent->color = RBTREE_RED;
         if(node->left->color == RBTREE_RED){
           node->color = RBTREE_BLACK;
-          R_rocate(node->parent); //우우회전
+          R_rocate(node); //우우회전
         }
         else{
           node->right->color = RBTREE_BLACK;
           L_rocate(node->right); //좌회전
-          R_rocate(node->parent->parent); //혹은 우회회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
+          R_rocate(node->parent); //혹은 우회회전..인데 자식노드랑 바꼈으니 부모의 부모로 회전
         } 
       }
     }
@@ -147,9 +155,23 @@ void INSERTChecking(node_t *node){
 }
 
 
+void L_rotate(node_t *node){
+  node->left->parent = node->parent;
+  node->parent->right = node->left; //노드 부모가 노드 좌측을 데려감
+  node->left = node->parent;  //노드 자식으로 노드 부모가 이동
+  node->parent = node->parent->parent; //노드의 부모를 원래 부모의 부모로 변경(노드 격상)
+  node->left->parent = node;  //양방향 연결 마감감
+  return;
+} 
 
-
-
+void R_rotate(node_t *node){
+  node->right->parent = node->parent;
+  node->parent->left = node->right; //노드 부모가 노드 좌측을 데려감
+  node->right = node->parent;  //노드 자식으로 노드 부모가 이동
+  node->parent = node->parent->parent; //노드의 부모를 원래 부모의 부모로 변경(노드 격상)
+  node->right->parent = node;  //양방향 연결 마감감
+  return;
+} 
 
 
 //중요 : 루트가 바꼈을 때 최신화가 아직 안되어있음 이거 꼭 반영해야됨, 회전 함수에 넣는걸 우선 생각중 -> 이중포인터로 넣자
