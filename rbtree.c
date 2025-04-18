@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//트리 여러개 생성 케이스도 만들어야함!!!!! 
 rbtree *new_rbtree(void) {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
   p->nil = malloc(sizeof(node_t)); //센티널만들기
@@ -28,9 +29,47 @@ node_t*makenode(rbtree *t,int item){
 
 
 void delete_rbtree(rbtree *t) {
-  // TODO: reclaim the tree nodes's memory
+  node_t *pre = t->root;
+  node_t *cur = t->root->left;
+
+  while (t->root->right != t->nil || t->root->left != t->nil){
+    
+    //좌측 밑바닥으로로
+    while(cur->left->key != t->nil){
+      pre = cur;
+      cur = cur->left;
+    }
+
+    //우측 밑바닥으로
+    if(cur->right != t->nil){
+      pre = cur;
+      cur = cur->right;
+
+
+    }
+
+    //밑바닥까지 왔다면
+
+    //해당 노드 방향 센티널로 변경
+    if(cur->key >= pre->key){ 
+      pre->right = t->nil;}
+
+    else{
+      pre->left = t->nil;}
+    
+    free(cur); //할당 해제
+    cur = pre; //cur 한단계 올리기
+    pre = cur->parent; //pre 한단계 올리기
+  }
+  free(t->root);
+  free(t->nil);
   free(t);
 }
+
+
+
+
+
 
 node_t *rbtree_insert(rbtree *t, const key_t key) {
   node_t *checker = t->root;
@@ -78,7 +117,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   //부모가 레드일때만 체크, 블랙은 패스, 루트인건 위에서 예외처리 했으니 경우의 수 없음
   if (new_node->parent->color == RBTREE_RED){ 
     INSERTChecking(new_node);
-    
+
     //자리 위치 바뀌었을 때 대비해서 루트 최신화
     while (t->root->parent != t->nil){
         t->root = t->root->parent;
@@ -93,7 +132,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
 //삽입 조건 만족 확인
 void INSERTChecking(node_t *node){
   //바텀 업 구상이기에 루트까지 올라가면 블랙처리 후 리턴
-  if (node->parent->key == NULL){ //수정 필요 루트의 대가리는 NIL
+  if (node->parent->key == NULL){ //루트의 대가리는 NIL
     node->color = RBTREE_BLACK;
     return;
   }
