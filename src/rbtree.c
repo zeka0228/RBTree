@@ -125,7 +125,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   while (1)
   {
 
-    if( key >= checker->key ){
+    if( key > checker->key ){
       //우측에 아무것도 없을 때때
       if(checker->right == t->nil){
         checker->right= new_node;
@@ -236,6 +236,10 @@ void L_rotate(node_t *node){
   node->parent->right = node->left; //노드 부모가 노드 좌측을 데려감
   node->left = node->parent;  //노드 자식으로 노드 부모가 이동
   node->parent = node->parent->parent; //노드의 부모를 원래 부모의 부모로 변경(노드 격상)
+  if(node->parent->right == node->left)
+    node->parent->right = node;
+  else
+    node->parent->left = node;
   node->left->parent = node;  //양방향 연결 마감감
   return;
 } 
@@ -245,6 +249,10 @@ void R_rotate(node_t *node){
   node->parent->left = node->right; //노드 부모가 노드 좌측을 데려감
   node->right = node->parent;  //노드 자식으로 노드 부모가 이동
   node->parent = node->parent->parent; //노드의 부모를 원래 부모의 부모로 변경(노드 격상)
+  if(node->parent->right == node->right)
+    node->parent->right = node;
+  else
+    node->parent->left = node;
   node->right->parent = node;  //양방향 연결 마감감
   return;
 } 
@@ -266,11 +274,11 @@ node_t *rbtree_find(const rbtree *t, const key_t key) {
 
   while(checker != t->nil){
     if(checker->key > key){
-      checker = checker->right;
+      checker = checker->left;
     }
 
     else if(checker->key < key){
-      checker = checker->left;
+      checker = checker->right;
     }
 
     else //중복이면 가장 먼저 조회된 놈부터
@@ -456,6 +464,9 @@ int rbtree_erase(rbtree *t, node_t *p) {
 //이중블랙일때만 실행되도록 설계 **중요:형제가 nil일 수는 없다 내가 일단 블랙인데 옆에 블랙이 없으면 그건 잘못된거겠지???
 void REMOVEchecking(rbtree *t, node_t *node){
   //루트 예외 설계 필요
+  t->nil->left = t->nil;
+  t->nil->right = t->nil;
+  t->nil->parent = node;
   if(node->parent == t->nil){
     return;
   }
@@ -471,7 +482,7 @@ void REMOVEchecking(rbtree *t, node_t *node){
     if(silbling->color == RBTREE_RED){
       silbling->color = RBTREE_BLACK;
       node->parent->color = RBTREE_RED;
-      L_rotate(node->parent);
+      L_rotate(silbling);
       return REMOVEchecking(t, node);
       
     }
@@ -480,17 +491,17 @@ void REMOVEchecking(rbtree *t, node_t *node){
     else{
 
       //형제 방향과 같은 방향 자식이 빨강  ***중요 : 둘다 레드여도 얘가 우선순위라 이게 맞음!!!
-      if(silbling->right->color == RBTREE_RED){
+      if( silbling != t->nil && silbling->right->color == RBTREE_RED){
         silbling->color = silbling->parent->color;
         silbling->right->color = RBTREE_BLACK;
         silbling->parent->color = RBTREE_BLACK;
-        L_rotate(silbling->parent);
+        L_rotate(silbling);
       }
       //다른 방향 자식이 빨강
-      else if(silbling->left->color == RBTREE_RED){
+      else if( silbling != t->nil && silbling->left->color == RBTREE_RED ){
         silbling->color = RBTREE_RED;
         silbling->left->color = RBTREE_BLACK;
-        R_rotate(silbling);
+        R_rotate(silbling->left);
         return REMOVEchecking(t, node); //다시 실행해서 위에꺼 작동되도록, 그래서 레드 준겨 ㅇㅇㅇ
       }
 
@@ -513,7 +524,7 @@ void REMOVEchecking(rbtree *t, node_t *node){
     if(silbling->color == RBTREE_RED){
       silbling->color = RBTREE_BLACK;
       node->parent->color = RBTREE_RED;
-      R_rotate(node->parent);
+      R_rotate(silbling);
       return REMOVEchecking(t, node);
       
     }
@@ -522,17 +533,17 @@ void REMOVEchecking(rbtree *t, node_t *node){
     else{
 
       //형제 방향과 같은 방향 자식이 빨강  ***중요 : 둘다 레드여도 얘가 우선순위라 이게 맞음!!!
-      if(silbling->left->color == RBTREE_RED){
+      if(silbling != t->nil && silbling->left->color == RBTREE_RED ){
         silbling->color = silbling->parent->color;
         silbling->left->color = RBTREE_BLACK;
         silbling->parent->color = RBTREE_BLACK;
-        R_rotate(silbling->parent);
+        R_rotate(silbling);
       }
       //다른 방향 자식이 빨강
-      else if(silbling->right->color == RBTREE_RED){
+      else if(silbling != t->nil && silbling->right->color == RBTREE_RED){
         silbling->color = RBTREE_RED;
         silbling->right->color = RBTREE_BLACK;
-        L_rotate(silbling);
+        L_rotate(silbling->right);
         return REMOVEchecking(t, node); //다시 실행해서 위에꺼 작동되도록, 그래서 레드 준겨 ㅇㅇㅇ
       }
 
