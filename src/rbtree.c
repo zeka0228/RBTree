@@ -1,7 +1,6 @@
 #include "rbtree.h"
 #include <stdlib.h>
 #include <stdio.h>
-#define SENTINEL
 
 
 
@@ -176,7 +175,7 @@ void INSERTChecking(rbtree *t, node_t *node){
   }
 
   //RnR 위반 시
-  if (node->color = RBTREE_RED && (node->left->color==RBTREE_RED || node->right->color == RBTREE_RED)){
+  if (node->color == RBTREE_RED && (node->left->color==RBTREE_RED || node->right->color == RBTREE_RED)){
     //노드가 우측일 때
     if(node->key >= node->parent->key){
 
@@ -375,7 +374,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
     //자식 노드가 두개일 때
     else{
       RP = p->right; //후임자 찾기용용
-      while (RP->left = t->nil){
+      while (RP->left != t->nil){
         RP = RP->left;
       }
       RP->parent->left = RP->right;
@@ -420,7 +419,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
     //자식 노드가 두개일 때
     else{
       RP = p->right; //후임자 찾기용용
-      while (RP->left = t->nil){
+      while (RP->left != t->nil){
         RP = RP->left;
       }
 
