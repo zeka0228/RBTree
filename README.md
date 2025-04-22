@@ -41,4 +41,8 @@ Balanced search tree로 많이 쓰이는 Red-black tree (이하 RB tree)를 C �
 - [위키백과: 레드-블랙 트리](https://ko.wikipedia.org/wiki/%EB%A0%88%EB%93%9C-%EB%B8%94%EB%9E%99_%ED%8A%B8%EB%A6%AC)
 ([영어](https://en.wikipedia.org/wiki/Red%E2%80%93black_tree))
 - CLRS book (Introduction to Algorithms) 13장 레드 블랙 트리 - Sentinel node를 사용한 구현
+<<<<<<< HEAD
 - [Wikipedia:균형 이진 트리의 구현 방법들](https://en.wikipedia.org/wiki/Self-balancing_binary_search_tree#Implementations)
+=======
+- [Wikipedia:균형 이진 트리의 구현 방법들](https://en.wikipedia.org/wiki/Self-balancing_binary_search_tree#Implementations)
+>>>>>>> 2387653 (first commit)
