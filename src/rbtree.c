@@ -328,7 +328,7 @@ node_t *rbtree_max(const rbtree *t) {
 int rbtree_erase(rbtree *t, node_t *p) {
   color_t remove_color = p->color;
   color_t check_color;
-  node_t *RP;
+  node_t *RP, *check;
   
   if(t->root == t->nil){
     return 0;
@@ -336,128 +336,203 @@ int rbtree_erase(rbtree *t, node_t *p) {
 
   //루트일 때 예외처리리
   if(p == t->root){
-    if(p->right != t->nil){
-      t->root = p->right;
-      p->right->parent = t->nil;
+    RP = p;
+    //우측에 노드가 있을 때때
+    if(RP->right != t->nil){
+      RP = RP->right;
+      
+      //더 내려갈 수 있을 때때
+      if(RP->left != t->nil){
+        while (RP->left != t->nil){
+          RP = RP->left;
+        }
+        check = RP->right;
+        check->parent = RP->parent;
+        RP->parent->left = check;
+
+        t->root = RP;
+        RP->left = p->left;
+        RP->right = p->right;
+        p->left->parent = RP;
+        p->right->parent = RP;
+
+        RP->parent = t->nil;
+
+        check_color = RP->color;
+        RP->color = RBTREE_BLACK;
+      }
+
+      //바로 오른쪽에 있는게 최선일 때때
+      else{
+        t->root = RP;
+        RP->left = p->left;
+        p->left->parent = RP;
+        RP->parent = t->nil;
+
+        check = t->nil;
+        check->parent = RP;
+        check_color = RP->color;
+        RP->color = RBTREE_BLACK;
+      }  
     }
+    //왼쪽에만 존재할 때(하나만 존재하는거임 그럼럼)
     else if (p->left != t->nil)
     {
-      t->root = p->left;
-      p->left->parent = t->nil;
-    }
+      RP = p->left;
+      t->root = RP;
+      
+      RP->parent = t->nil;
+
+      check = t->nil;
+      check->parent = RP;
+
+      check_color = RP->color;
+      RP->color = RBTREE_BLACK;
+    }    
+    
+    //루트 혼자만 있을 때때
     else{
       t->root = t->nil;
+      free(p);
+      return 0;
     }
-    t->root->color = RBTREE_BLACK;
     
-    free(p);
-    return 0;
   }
-
-
-
-  //검색해서 나온게 왼쪽 노드 였을 때
-  if(p->key < p->parent->key){
-    //자식 노드가 하나일때
-    if(p->left == t->nil){
-      p->parent->left = p->right;
-
-      p->right->parent = p->parent;
-
-      check_color = p->right->color; 
-      p->right->color = RBTREE_BLACK;
-      RP = p->right;
-    }
-
-    else if(p->right == t->nil){
-      p->parent->left = p->left;
-
-      p->left->parent = p->parent;
-
-      check_color = p->left->color;
-      p->left->color = RBTREE_BLACK;
-      RP = p->left;
-    }
-
-    //자식 노드가 두개일 때
-    else{
-      RP = p->right; //후임자 찾기용용
-      while (RP->left != t->nil){
-        RP = RP->left;
-      }
-      RP->parent->left = RP->right;
-      RP->right->parent = RP->parent;
-
-      p->parent->left = RP;
-      RP->parent = p->parent;
-      RP->right = p->right;
-      p->right->parent = RP;
-
-      check_color = RP->color;
-      RP->color = RBTREE_BLACK;
-
-    }
-    
-  }  
-
-
-  //우측 노드일때때
   else{
-    //자식 노드가 하나일때
-    if(p->left == t->nil){
-      p->parent->right = p->right;
+    //검색해서 나온게 왼쪽 노드 였을 때
+    if(p->key < p->parent->key){
+      //자식 노드가 하나일때
+      if(p->left == t->nil){
+        p->parent->left = p->right;
 
-      p->right->parent = p->parent;
+        p->right->parent = p->parent;
 
-      check_color = p->right->color; 
-      p->right->color = RBTREE_BLACK;
-      RP = p->right;
-    }
-
-    else if(p->right == t->nil){
-      p->parent->right = p->left;
-
-      p->left->parent = p->parent;
-
-      check_color = p->left->color;
-      p->left->color = RBTREE_BLACK;
-      RP = p->left;
-    }
-
-    //자식 노드가 두개일 때
-    else{
-      RP = p->right; //후임자 찾기용용
-      while (RP->left != t->nil){
-        RP = RP->left;
+        check_color = p->right->color; 
+        p->right->color = RBTREE_BLACK;
+        check = p->right;
+       
       }
 
-      //우측 서브트리/리프노드 부모에 붙이기
-      RP->parent->right = RP->right;
-      RP->right->parent = RP->parent;
+      else if(p->right == t->nil){
+        p->parent->left = p->left;
+
+        p->left->parent = p->parent;
+
+        check_color = p->left->color;
+        p->left->color = RBTREE_BLACK;
+        check = p->left;
+    
+      }
+
+      //자식 노드가 두개일 때
+      else{
+        RP = p->right; //후임자 찾기용용
+        if(RP->left != t->nil){
+          while (RP->left != t->nil){
+            RP = RP->left;
+          }
+          RP->parent->left = RP->right;
+          RP->right->parent = RP->parent;
+          check = RP->parent->left;
+
+          p->parent->left = RP;
+          RP->parent = p->parent;
+
+          RP->right = p->right;
+          p->right->parent = RP;
+
+          check_color = RP->color;
+          RP->color = RBTREE_BLACK;
+
+         
+        }
+        else{
+          p->parent->left = RP;
+          RP->parent = p->parent;
+          
+          RP->left = p->left;
+          p->left->parent = RP;
+
+          check_color = RP->color;
+          RP->color = RBTREE_BLACK;
+
+          check = RP;
+        }
+      }
+      
+    }  
 
 
-      p->parent->right = RP;
-      RP->parent = p->parent;
-      RP->right = p->right;
-      p->right->parent = RP;
+    //우측 노드일때때
+    else{
+      //자식 노드가 하나일때
+      if(p->left == t->nil){
+        p->parent->right = p->right;
 
-      check_color = RP->color;
-      RP->color = RBTREE_BLACK;
+        p->right->parent = p->parent;
+        
+        check_color = p->right->color; 
+        p->right->color = RBTREE_BLACK;
+        check = p->right;
+      
+      }
+
+      else if(p->right == t->nil){
+        p->parent->right = p->left;
+
+        p->left->parent = p->parent;
+
+        check_color = p->left->color;
+        p->left->color = RBTREE_BLACK;
+        check = p->left;
+      }
+
+      //자식 노드가 두개일 때
+      else{
+        RP = p->right; //후임자 찾기용용
+        if(RP->left != t->nil){
+          while (RP->left != t->nil){
+            RP = RP->left;
+          }
+          RP->parent->left = RP->right;
+          RP->right->parent = RP->parent;
+          check = RP->parent->left;
+
+          p->parent->left = RP;
+          RP->parent = p->parent;
+          RP->right = p->right;
+          p->right->parent = RP;
+
+          check_color = RP->color;
+          RP->color = RBTREE_BLACK;
+
+         
+        }
+        else{
+          p->parent->right = RP;
+          RP->parent = p->parent;
+          
+          check_color = RP->color;
+          RP->color = RBTREE_BLACK;
+          
+          check = RP;
+        }
+      }
+      
+      
     }
     
-    
   }
-    
+  
+
   free(p);
-
-
   if (remove_color ==RBTREE_BLACK && check_color == RBTREE_BLACK){
-        REMOVEchecking(t, RP);
+        REMOVEchecking(t, check);
   }
     
 
 
-  t->nil->parent = NULL;
+  t->nil->parent = t->nil;
   return 0;
 }
 
@@ -466,8 +541,8 @@ void REMOVEchecking(rbtree *t, node_t *node){
   //루트 예외 설계 필요
   t->nil->left = t->nil;
   t->nil->right = t->nil;
-  t->nil->parent = node;
-  if(node->parent == t->nil){
+
+  if(node == t->root || node->parent == t->nil){
     return;
   }
 
@@ -559,7 +634,9 @@ void REMOVEchecking(rbtree *t, node_t *node){
 
 
   }
-
+  while (t->root->parent != t->nil){
+    t->root = t->root->parent;
+  }
   return;
 }
 
