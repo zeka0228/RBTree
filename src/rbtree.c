@@ -125,7 +125,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   while (1)
   {
 
-    if( key > checker->key ){
+    if( key >= checker->key ){
       //우측에 아무것도 없을 때때
       if(checker->right == t->nil){
         checker->right= new_node;
@@ -440,6 +440,8 @@ int rbtree_erase(rbtree *t, node_t *p) {
 
           RP->right = p->right;
           p->right->parent = RP;
+          RP->left = p->left;
+          p->left->parent = RP;
 
           check_color = RP->color;
           RP->color = RBTREE_BLACK;
@@ -500,8 +502,11 @@ int rbtree_erase(rbtree *t, node_t *p) {
 
           p->parent->left = RP;
           RP->parent = p->parent;
+
           RP->right = p->right;
           p->right->parent = RP;
+          RP->left = p->left;
+          p->left->parent = RP;
 
           check_color = RP->color;
           RP->color = RBTREE_BLACK;
@@ -512,6 +517,9 @@ int rbtree_erase(rbtree *t, node_t *p) {
           p->parent->right = RP;
           RP->parent = p->parent;
           
+          RP->left = p->left;
+          p->left->parent = RP;
+
           check_color = RP->color;
           RP->color = RBTREE_BLACK;
           
@@ -582,7 +590,8 @@ void REMOVEchecking(rbtree *t, node_t *node){
 
       //둘다 검정
       else{
-        silbling->color = RBTREE_RED;
+        if(silbling != t->nil)
+          silbling->color = RBTREE_RED;
         if(node->parent->color == RBTREE_BLACK)
           return REMOVEchecking(t, node->parent);
         node->parent->color = RBTREE_BLACK;
@@ -624,7 +633,8 @@ void REMOVEchecking(rbtree *t, node_t *node){
 
       //둘다 검정
       else{
-        silbling->color = RBTREE_RED;
+        if(silbling != t->nil)
+          silbling->color = RBTREE_RED;
         if(node->parent->color == RBTREE_BLACK)
           return REMOVEchecking(t, node->parent);
         node->parent->color = RBTREE_BLACK;
