@@ -18,7 +18,7 @@ void REMOVEchecking(rbtree *t, node_t *node);
 
 
 
-
+//*** 너 초기화 되지 않은 값 여기 있다니까 내일 꼭 확인해라 제발발
 
 
 //트리 여러개 생성 케이스도 만들어야함!!!!! 
