@@ -28,6 +28,7 @@ rbtree *new_rbtree(void) {
   node_t *SENTI = (node_t *)malloc(sizeof(node_t));
   SENTI->color = RBTREE_BLACK;  //블랙 고정정
   p->nil = SENTI;
+  p->nil->left = p->nil->right = p->nil->parent = NULL;
   p->root = p->nil;
 
   return p;
@@ -496,9 +497,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
     
   }
   
-  p->left = NULL;
-  p->right = NULL;
-  p->parent = NULL;
+
   free(p);
   if (remove_color ==RBTREE_BLACK && check_color == RBTREE_BLACK){
         REMOVEchecking(t, check);
