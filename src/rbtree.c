@@ -14,7 +14,7 @@ int rbtree_to_array(const rbtree *, key_t *, const size_t);
 void R_rotate(node_t *node);
 void L_rotate(node_t *node);
 void REMOVEchecking(rbtree *t, node_t *node);
-
+void delete_node(rbtree *t, node_t *node);
 
 
 
@@ -54,56 +54,21 @@ void delete_rbtree(rbtree *t) {
     free(t);
     return;
   }
-  node_t *pre = t->root;
-  if(pre->left == NULL){
-    if(pre->right == NULL){
-      free(pre->right);
-    }
-    free(pre->right);
-    free(t->root);
-    free(t->nil);
-    free(t);
-    return;
-  }
-  node_t *cur = t->root->left;
-
-  while (t->root->right != t->nil || t->root->left != t->nil){
-    
-    //좌측 밑바닥으로로
-    while(cur->left != t->nil){
-      pre = cur;
-      cur = cur->left;
-    }
-
-    //우측 밑바닥으로
-    if(cur->right != t->nil){
-      pre = cur;
-      cur = cur->right;
-
-
-    }
-
-    //밑바닥까지 왔다면
-
-    //해당 노드 방향 센티널로 변경
-    if(cur->key >= pre->key){ 
-      pre->right = t->nil;}
-
-    else{
-      pre->left = t->nil;}
-    
-    free(cur); //할당 해제
-    cur = pre; //cur 한단계 올리기
-    pre = cur->parent; //pre 한단계 올리기
-  }
-  free(t->root);
+  
+  delete_node(t,t->root);
   free(t->nil);
   free(t);
-  
 }
 
 
-
+void delete_node(rbtree *t, node_t *node){
+  if(node->left != t->nil)
+    delete_node(t, node->left);
+  if(node->right != t->nil)
+    delete_node(t, node->right);
+  free(node);
+  return;  
+}
 
 
 
@@ -400,11 +365,10 @@ int rbtree_erase(rbtree *t, node_t *p) {
   }
   else{
     //검색해서 나온게 왼쪽 노드 였을 때
-    if(p->key < p->parent->key){
+    if(p == p->parent->left){
       //자식 노드가 하나일때
       if(p->left == t->nil){
         p->parent->left = p->right;
-
         p->right->parent = p->parent;
 
         check_color = p->right->color; 
@@ -500,7 +464,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
           RP->right->parent = RP->parent;
           check = RP->parent->left;
 
-          p->parent->left = RP;
+          p->parent->right = RP;
           RP->parent = p->parent;
 
           RP->right = p->right;
@@ -532,7 +496,9 @@ int rbtree_erase(rbtree *t, node_t *p) {
     
   }
   
-
+  p->left = NULL;
+  p->right = NULL;
+  p->parent = NULL;
   free(p);
   if (remove_color ==RBTREE_BLACK && check_color == RBTREE_BLACK){
         REMOVEchecking(t, check);
