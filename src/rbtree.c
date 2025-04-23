@@ -15,6 +15,7 @@ void R_rotate(node_t *node);
 void L_rotate(node_t *node);
 void REMOVEchecking(rbtree *t, node_t *node);
 void delete_node(rbtree *t, node_t *node);
+int checking(const rbtree *t, key_t *arr, node_t *node, const size_t n, int wak);
 
 
 
@@ -23,7 +24,6 @@ void delete_node(rbtree *t, node_t *node);
 
 //트리 여러개 생성 케이스도 만들어야함!!!!! 
 rbtree *new_rbtree(void) {
-  printf("hi");
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
   node_t *SENTI = (node_t *)malloc(sizeof(node_t));
   SENTI->color = RBTREE_BLACK;  //블랙 고정정
@@ -225,6 +225,7 @@ void R_rotate(node_t *node){
 
 
 //중요 : 루트가 바꼈을 때 최신화가 아직 안되어있음 이거 꼭 반영해야됨, 회전 함수에 넣는걸 우선 생각중 -> 이중포인터로 넣자
+//네~ 했어요~
 
 
 
@@ -619,6 +620,22 @@ void REMOVEchecking(rbtree *t, node_t *node){
 
 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
-  // TODO: implement to_array
+  checking(t, arr, t->root, n, 0);
   return 0;
+}
+
+//중위 순회 구현현
+int checking(const rbtree *t, key_t *arr, node_t *node, const size_t n, int wak){
+  if(node == t->nil) return wak;
+  if(wak == n) return wak;
+
+  wak = checking(t, arr, node->left, n, wak);
+  
+  if(wak == n) return wak;
+  *(arr + wak) = node->key;
+  wak++;
+
+  if(wak == n) return wak;
+  wak = checking(t, arr, node->right, n, wak);
+  return wak;
 }
